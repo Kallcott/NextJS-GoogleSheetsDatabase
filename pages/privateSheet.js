@@ -2,7 +2,7 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 
 // We import sheetData from getServerSideProps
-export default function Home() {
+export default function Home({ sheetdata }) {
   return (
     <div className={styles.container}>
       <Head>
@@ -12,14 +12,20 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Two examples:
-          <br />
-          <a href="privateSheet">Accessing a private sheet</a>
-          <br />
-          <a href="posts/1">Accessing a public sheet</a>
-        </h1>
+        {/* we place sheet data in text */}
+        <h1 className={styles.title}>{sheetdata}</h1>
       </main>
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  const req = await fetch("http://localhost:3000/api/privateSheet");
+  const res = await req.json();
+
+  return {
+    props: {
+      sheetdata: res.data,
+    },
+  };
 }

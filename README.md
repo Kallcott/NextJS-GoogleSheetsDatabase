@@ -1,5 +1,16 @@
 Following this tutorial:
+
+<!-- FireBase: initial video idea-stem -->
+
 https://www.youtube.com/watch?v=K6Vcfm7TA5U
+
+<!-- The Whiz : reading dog database -->
+
+https://www.youtube.com/watch?v=sRNQ-9DVsQU&t=502s
+
+<!-- James Grimshaw: long video - write to database -->
+
+https://www.youtube.com/watch?v=PFJNJQCU_lo
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 

@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+// import { flushSync } from "react-dom/cjs/react-dom.production.min";
 
 // Our server side code. NextJS code
 // This will fetch properties, run only on server
@@ -7,18 +8,15 @@ export async function getServerSideProps({ query }) {
   const auth = await google.auth.getClient({
     scope: ["https:/www.googleapis.com/auth/spreadsheets.readonly"],
   });
-  console.log("good to go!");
-
   const sheets = google.sheets({ version: "v4", auth });
-  console.log(sheets);
 
   // Query
   const { id } = query;
-  const range = `Sheet1!A${id}:C${id}`;
+  const range = `Sheet1!A${id}:B${id}`;
   console.log(range);
 
   const responce = await sheets.spreadsheets.values.get({
-    spreadsheetID: process.env.SHEET_ID,
+    spreadsheetId: "1MSyG3Wm8-hwCkJdK31-LKs5NTGLPqxtK35nH--hzzu8",
     range,
   });
 
