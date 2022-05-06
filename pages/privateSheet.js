@@ -2,7 +2,7 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 
 // We import sheetData from getServerSideProps
-export default function Home({ sheetdata }) {
+export default function Sheet({ sheetdata }) {
   return (
     <div className={styles.container}>
       <Head>
@@ -20,7 +20,10 @@ export default function Home({ sheetdata }) {
 }
 
 export async function getServerSideProps() {
-  const req = await fetch("http://localhost:3000/api/privateSheet");
+  const URL = process.env.URL;
+  console.log(URL + "/api/privateSheet");
+  const req = await fetch(URL + "/api/privateSheet");
+
   const res = await req.json();
 
   return {
