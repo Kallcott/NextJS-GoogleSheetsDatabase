@@ -2,6 +2,7 @@ import { google } from "googleapis";
 import keys from "../../secrets";
 
 export default function handler(req, res) {
+  //#region Auth
   //get values from keys json file.
   try {
     const client = new google.auth.JWT(
@@ -20,6 +21,7 @@ export default function handler(req, res) {
 
       // sets us to use googlehseets API
       const gsapi = google.sheets({ version: "v4", auth: client });
+      //#endregion
 
       // sheet specific info
       const request = {

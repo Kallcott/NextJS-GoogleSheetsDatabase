@@ -16,8 +16,6 @@ export default function Home() {
           Two examples:
           <br />
           <a href="privateSheet">Accessing a private sheet</a>
-          <br />
-          <a href="posts/1">Accessing a public sheet</a>
         </h1>
       </main>
     </div>
