@@ -12,7 +12,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Two examples:
+          Example:
           <br />
           <a href="privateSheet">Accessing a private sheet</a>
         </h1>
