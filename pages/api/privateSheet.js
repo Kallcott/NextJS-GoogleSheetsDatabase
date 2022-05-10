@@ -26,15 +26,17 @@ export default function handler(req, res) {
       // sheet specific info
       const request = {
         spreadsheetId: process.env.SPREADSHEET_ID,
-        range: "GoogleSheetsDatabase!A1:C",
+        range: "GoogleSheetsDatabase!A1:E",
       };
 
       let data = await gsapi.spreadsheets.values.get(request, client.auth);
       // console.log(data.data.values[1][0]);
 
-      let headers = {
-        headerText: [],
-        headerRow: [],
+      let sheet = {
+        headers: {
+          headerText: [],
+          headerRow: [],
+        },
         entries: {
           headerIndex: [],
           entryText: [],
@@ -44,73 +46,69 @@ export default function handler(req, res) {
       // Get values for Headers
       for (let i = 0; i < data.data.values.length; i++) {
         if (data.data.values[i][0]) {
-          headers.headerText.push(data.data.values[i][0]);
-          headers.headerRow.push(i);
+          sheet.headers.headerText.push(data.data.values[i][0]);
+          sheet.headers.headerRow.push(i);
         }
         // console.log(data.data.values[i][0]);
       }
-      console.log(headers.headerRow);
+      console.log(sheet.headers.headerRow);
 
       //For each header, assign entries
-      for (let h = 0; h < headers.headerRow.length; h++) {
-        console.log("HeaderRow " + headers.headerRow[h]);
+      for (let h = 0; h < sheet.headers.headerRow.length; h++) {
+        console.log("HeaderRow " + sheet.headers.headerRow[h]);
 
         // Special case for Last header
-        if (h == headers.headerRow.length - 1) {
+        if (h == sheet.headers.headerRow.length - 1) {
           for (
-            let r = headers.headerRow[h] + 1; // Starts on row after header
+            let r = sheet.headers.headerRow[h] + 1; // Starts on row after header
             r < data.data.values.length; // ends row before next header
             r++
           ) {
             if (!data.data.values[r][1]) {
               break;
             }
-            headers.entries.headerIndex.push(h);
+            sheet.entries.headerIndex.push(h);
             console.log(
               "row " +
                 r +
                 " - HeaderIndex " +
-                headers.entries.headerIndex[
-                  headers.entries.headerIndex.length - 1
-                ]
+                sheet.entries.headerIndex[sheet.entries.headerIndex.length - 1]
             );
 
-            headers.entries.entryText.push(
+            sheet.entries.entryText.push(
               data.data.values[r][1],
-              data.data.values[r][2],
-              data.data.values[r][3]
+              data.data.values[r][2]
+              // data.data.values[r][3]
             );
           }
         }
 
         //Range for entries in database
         for (
-          let r = headers.headerRow[h] + 1; // Starts on row after header
-          r < headers.headerRow[h + 1]; // ends row before next header
+          let r = sheet.headers.headerRow[h] + 1; // Starts on row after header
+          r < sheet.headers.headerRow[h + 1]; // ends row before next header
           r++
         ) {
-          headers.entries.headerIndex.push(h);
+          sheet.entries.headerIndex.push(h);
           console.log(
             "row " +
               r +
               " - HeaderIndex " +
-              headers.entries.headerIndex[
-                headers.entries.headerIndex.length - 1
-              ]
+              sheet.entries.headerIndex[sheet.entries.headerIndex.length - 1]
           );
 
-          headers.entries.entryText.push(
+          sheet.entries.entryText.push(
             data.data.values[r][1],
-            data.data.values[r][2],
-            data.data.values[r][3]
+            data.data.values[r][2]
+            // data.data.values[r][3]
           );
         }
       }
-      console.log(headers.entries);
+      console.log(JSON.stringify(sheet));
 
       return res
         .status(400)
-        .send(JSON.stringify({ error: false, data: data.data.values }));
+        .send(JSON.stringify({ error: false, data: sheet }));
     });
   } catch (e) {
     return res

@@ -13,7 +13,24 @@ export default function Sheet({ sheetdata }) {
 
       <main className={styles.main}>
         {/* we place sheet data in text */}
-        <h1 className={styles.title}>{sheetdata}</h1>
+        <h1 className={styles.title}>{console.log(sheetdata)}</h1>
+        {/* Load Headers */}
+        {sheetdata.headers.headerText.map((value, index) => {
+          return (
+            <h1 class="header" id={index}>
+              {value}
+            </h1>
+          );
+        })}
+        {/* Load Entries */}
+
+        {sheetdata.entries.entryText.map((value, index) => {
+          return (
+            <p class="entries" key={sheetdata.entries.headerIndex[index]}>
+              {value}
+            </p>
+          );
+        })}
       </main>
     </div>
   );
