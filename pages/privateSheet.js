@@ -15,7 +15,7 @@ export default function Sheet({ sheetdata }) {
         {/* we place sheet data in text */}
         <h1 className={styles.title}>{console.log(sheetdata)}</h1>
         {/* Load Headers */}
-        {sheetdata.headers.headerText.map((value, index) => {
+        {sheetdata.headers.map((value, index) => {
           return (
             <h1 class="header" id={index}>
               {value}
@@ -24,7 +24,7 @@ export default function Sheet({ sheetdata }) {
         })}
         {/* Load Entries */}
 
-        {sheetdata.entries.entryText.map((value, index) => {
+        {sheetdata.entries.map((value, index) => {
           return (
             <p class="entries" key={sheetdata.entries.headerIndex[index]}>
               {value}

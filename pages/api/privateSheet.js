@@ -32,83 +32,102 @@ export default function handler(req, res) {
       let data = await gsapi.spreadsheets.values.get(request, client.auth);
       // console.log(data.data.values[1][0]);
 
-      let sheet = {
-        headers: {
-          headerText: [],
-          headerRow: [],
-        },
-        entries: {
-          headerIndex: [],
-          entryText: [],
-        },
-      };
+      class entry {
+        constructor(instruction, step, headerIndex) {
+          this.entryInstruction = instruction;
+          this.entryStep = step;
+          this.headerIndex = headerIndex;
+        }
+      }
+      class entries {
+        constructor() {
+          this.entries = [];
+        }
+      }
+      class header {
+        constructor(text, row) {
+          this.headerText = text;
+          this.headerRow = row;
+          this.headerEntries = [];
+        }
+      }
+      class headers {
+        constructor() {
+          this.headers = [];
+        }
+      }
+      class sheet {
+        constructor() {
+          this.headers = [];
+        }
+        newHeader(text, row) {
+          let h = new header(text, row);
+          this.headers.push(h);
+        }
+        newEntry(instruction, step, headerIndex) {
+          let e = new entry(instruction, step, headerIndex);
+          this.headers[e.headerIndex].headerEntries.push(e);
+        }
+      }
 
+      // ----------------
       // Get values for Headers
+      console.log("Creating sheet");
+      let sheet1 = new sheet();
       for (let i = 0; i < data.data.values.length; i++) {
         if (data.data.values[i][0]) {
-          sheet.headers.headerText.push(data.data.values[i][0]);
-          sheet.headers.headerRow.push(i);
+          sheet1.newHeader(data.data.values[i][0], i);
         }
-        // console.log(data.data.values[i][0]);
       }
-      console.log(sheet.headers.headerRow);
 
       //For each header, assign entries
-      for (let h = 0; h < sheet.headers.headerRow.length; h++) {
-        console.log("HeaderRow " + sheet.headers.headerRow[h]);
+      for (let i = 0; i < sheet1.headers.length; i++) {
+        console.log("HeaderRow " + sheet1.headers[i].headerRow);
 
         // Special case for Last header
-        if (h == sheet.headers.headerRow.length - 1) {
+        if (i == sheet1.headers.length - 1) {
           for (
-            let r = sheet.headers.headerRow[h] + 1; // Starts on row after header
-            r < data.data.values.length; // ends row before next header
-            r++
+            let row = sheet1.headers[i].headerRow + 1; // Starts on row after header
+            row < data.data.values.length; // stops before the last row
+            row++
           ) {
-            if (!data.data.values[r][1]) {
+            if (!data.data.values[row][1]) {
               break;
             }
-            sheet.entries.headerIndex.push(h);
-            console.log(
-              "row " +
-                r +
-                " - HeaderIndex " +
-                sheet.entries.headerIndex[sheet.entries.headerIndex.length - 1]
+            sheet1.newEntry(
+              data.data.values[row][1],
+              data.data.values[row][2],
+              i
             );
-
-            sheet.entries.entryText.push(
-              data.data.values[r][1],
-              data.data.values[r][2]
-              // data.data.values[r][3]
+            console.log(
+              "row " + row + " - HeaderIndex " + sheet1.headers[i].entries
             );
           }
         }
-
+        if (!data.data.values[i][1]) {
+          break;
+        }
         //Range for entries in database
         for (
-          let r = sheet.headers.headerRow[h] + 1; // Starts on row after header
-          r < sheet.headers.headerRow[h + 1]; // ends row before next header
-          r++
+          let row = sheet1.headers[i].headerRow + 1; // Starts on row after header
+          row < sheet1.headers[i + 1].headerRow; // ends row before next header
+          row++
         ) {
-          sheet.entries.headerIndex.push(h);
-          console.log(
-            "row " +
-              r +
-              " - HeaderIndex " +
-              sheet.entries.headerIndex[sheet.entries.headerIndex.length - 1]
+          sheet1.newEntry(
+            data.data.values[row][1],
+            data.data.values[row][2],
+            i
           );
-
-          sheet.entries.entryText.push(
-            data.data.values[r][1],
-            data.data.values[r][2]
-            // data.data.values[r][3]
+          console.log(
+            "row " + row + " - HeaderIndex " + sheet1.headers[i].entries
           );
         }
       }
-      console.log(JSON.stringify(sheet));
+      console.log(JSON.stringify(sheet1));
 
       return res
         .status(400)
-        .send(JSON.stringify({ error: false, data: sheet }));
+        .send(JSON.stringify({ error: false, data: sheet1 }));
     });
   } catch (e) {
     return res
