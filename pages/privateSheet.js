@@ -11,24 +11,29 @@ export default function Sheet({ sheetdata }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        {/* we place sheet data in text */}
-        <h1 className={styles.title}>{console.log(sheetdata)}</h1>
+      <main>
         {/* Load Headers */}
         {sheetdata.headers.map((value, index) => {
           return (
-            <h1 class="header" id={index}>
-              {value}
-            </h1>
-          );
-        })}
-        {/* Load Entries */}
+            <section id={index}>
+              <h1 class={"header, " + index}>
+                <pre>{value.headerText}</pre>
+              </h1>
 
-        {sheetdata.entries.map((value, index) => {
-          return (
-            <p class="entries" key={sheetdata.entries.headerIndex[index]}>
-              {value}
-            </p>
+              {/* Load Entries */}
+              {value.headerEntries.map((value, index) => {
+                return (
+                  <div>
+                    <h4 class={"enrtryInstruction, " + value.headerIndex}>
+                      <pre>{value.entryInstruction}</pre>
+                    </h4>
+                    <pre class={"entryDetails, " + value.headerIndex}>
+                      {value.entryDetails}
+                    </pre>
+                  </div>
+                );
+              })}
+            </section>
           );
         })}
       </main>

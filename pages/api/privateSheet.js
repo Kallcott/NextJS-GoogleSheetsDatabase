@@ -33,15 +33,10 @@ export default function handler(req, res) {
       // console.log(data.data.values[1][0]);
 
       class entry {
-        constructor(instruction, step, headerIndex) {
+        constructor(instruction, details, headerIndex) {
           this.entryInstruction = instruction;
-          this.entryStep = step;
+          this.entryDetails = details;
           this.headerIndex = headerIndex;
-        }
-      }
-      class entries {
-        constructor() {
-          this.entries = [];
         }
       }
       class header {
@@ -51,29 +46,30 @@ export default function handler(req, res) {
           this.headerEntries = [];
         }
       }
-      class headers {
-        constructor() {
-          this.headers = [];
-        }
-      }
       class sheet {
         constructor() {
           this.headers = [];
         }
         newHeader(text, row) {
           let h = new header(text, row);
+          console.log(
+            " - " + h.headerText + " - " + h.headerRow + " - " + h.headerEntries
+          );
           this.headers.push(h);
         }
-        newEntry(instruction, step, headerIndex) {
-          let e = new entry(instruction, step, headerIndex);
+        newEntry(instruction, details, headerIndex) {
+          let e = new entry(instruction, details, headerIndex);
           this.headers[e.headerIndex].headerEntries.push(e);
+          console.log("- Instruction: " + e.entryInstruction);
         }
       }
 
       // ----------------
       // Get values for Headers
-      console.log("Creating sheet");
+      console.log("------ Creating Sheet ------");
       let sheet1 = new sheet();
+
+      console.log("------ Creating Headers ------");
       for (let i = 0; i < data.data.values.length; i++) {
         if (data.data.values[i][0]) {
           sheet1.newHeader(data.data.values[i][0], i);
@@ -81,49 +77,47 @@ export default function handler(req, res) {
       }
 
       //For each header, assign entries
-      for (let i = 0; i < sheet1.headers.length; i++) {
-        console.log("HeaderRow " + sheet1.headers[i].headerRow);
+      console.log("------ Creating Entries ------");
+      for (let hIndex = 0; hIndex < sheet1.headers.length; hIndex++) {
+        console.log("--- For Header: " + sheet1.headers[hIndex].headerText);
 
         // Special case for Last header
-        if (i == sheet1.headers.length - 1) {
+        if (hIndex == sheet1.headers.length - 1) {
+          console.log("------- Inside Last Header Special Case -------");
           for (
-            let row = sheet1.headers[i].headerRow + 1; // Starts on row after header
+            let row = sheet1.headers[hIndex].headerRow + 1; // Starts on row after header
             row < data.data.values.length; // stops before the last row
             row++
           ) {
+            // Break if there is null value in row
             if (!data.data.values[row][1]) {
               break;
             }
             sheet1.newEntry(
               data.data.values[row][1],
               data.data.values[row][2],
-              i
-            );
-            console.log(
-              "row " + row + " - HeaderIndex " + sheet1.headers[i].entries
+              hIndex
             );
           }
-        }
-        if (!data.data.values[i][1]) {
+          // Break after the last header.
           break;
         }
+
         //Range for entries in database
         for (
-          let row = sheet1.headers[i].headerRow + 1; // Starts on row after header
-          row < sheet1.headers[i + 1].headerRow; // ends row before next header
+          let row = sheet1.headers[hIndex].headerRow + 1; // Starts on row after header
+          row < sheet1.headers[hIndex + 1].headerRow; // ends row before next header
           row++
         ) {
           sheet1.newEntry(
             data.data.values[row][1],
             data.data.values[row][2],
-            i
-          );
-          console.log(
-            "row " + row + " - HeaderIndex " + sheet1.headers[i].entries
+            hIndex
           );
         }
       }
-      console.log(JSON.stringify(sheet1));
+      console.log("------ Creating Json -------");
+      console.log("Json String: " + JSON.stringify(sheet1));
 
       return res
         .status(400)
