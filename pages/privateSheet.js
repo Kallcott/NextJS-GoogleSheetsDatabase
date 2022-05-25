@@ -12,34 +12,42 @@ export default function Sheet({ sheetdata }) {
       </Head>
 
       <main>
-        {/* Load Headers */}
-        {sheetdata.headers.map((value, index) => {
+        {sheetdata.map((value, index) => {
           return (
-            <section id={index}>
-              <h1 class={"header, " + index}>
-                <pre>{value.headerText}</pre>
-              </h1>
+            <article class="sheet">
+              <h1 class="sheetTitle">{value.title}</h1>
 
-              {/* Load Entries */}
-              {value.headerEntries.map((value, index) => {
+              {/* Load Headers */}
+              {sheetdata[index].headers.map((value, index) => {
                 return (
-                  <div>
-                    <h4
-                      class={"enrtryInstruction, " + value.headerIndex}
-                      key={index}
-                    >
-                      <pre>{value.entryInstruction}</pre>
-                    </h4>
-                    <pre
-                      class={"entryDetails, " + value.headerIndex}
-                      key={index}
-                    >
-                      {value.entryDetails}
-                    </pre>
-                  </div>
+                  <section id={index}>
+                    <h2 class={"header, " + index}>
+                      <pre>{value.headerText}</pre>
+                    </h2>
+
+                    {/* Load Entries */}
+                    {value.headerEntries.map((value, index) => {
+                      return (
+                        <div>
+                          <h4
+                            class={"entryInstruction, " + value.headerIndex}
+                            key={index}
+                          >
+                            <pre>{value.entryInstruction}</pre>
+                          </h4>
+                          <pre
+                            class={"entryDetails, " + value.headerIndex}
+                            key={index}
+                          >
+                            {value.entryDetails}
+                          </pre>
+                        </div>
+                      );
+                    })}
+                  </section>
                 );
               })}
-            </section>
+            </article>
           );
         })}
       </main>

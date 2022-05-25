@@ -1,0 +1,20 @@
+@use "sass:map";
+
+@function clr($base, $shade: base) {
+    $color: map-get(map-get($colors, $base), $shade);
+    @return $color;
+  }
+
+// @function color($color, $value: 100) {
+//     $result: map-get($colors, $color, $value);
+//     @return $result;
+//  }
+
+// @function double($size){
+//     @return $size * 2;
+//   }
+
+// @function invert($color, $amount: 100%) {
+//     $inverse: change-color($color, $hue: hue($color) + 180);
+//     @return mix($inverse, $color, $amount);
+//   }

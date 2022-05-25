@@ -24,6 +24,8 @@ export default function handler(req, res) {
       //#endregion
 
       //#region Request Names of Multiple Worksheets
+
+      // Requests usinsg spreadsheet.get
       const requestSpreadSheetInfo = {
         spreadsheetId: process.env.SPREADSHEET_ID,
       };
@@ -33,23 +35,12 @@ export default function handler(req, res) {
         client.auth
       );
 
+      // Pulling Sheetnames into a range to use in the following sheet request.
       let sheetNames = [];
       dataSpreadSheetInfo.data.sheets.forEach((i) => {
         sheetNames.push(i.properties.title);
       });
 
-      // console.log(dataSpreadSheetInfo.data.sheets);
-      console.log(sheetNames);
-
-      // function ToRange(strArray) {
-      //   let range = "";
-      //   strArray.forEach((str) => {
-      //     range += `${str}!A1:E&ranges=`;
-      //   });
-      //   range = "ranges=" + range;
-      //   range = range.slice(0, -8);
-      //   return range;
-      // }
       function ToRange(strArray) {
         let newArr = strArray.map((element, index) => {
           return element + "!A1:E";
@@ -60,14 +51,13 @@ export default function handler(req, res) {
 
       //#endregion
 
-      // sheet specific info
+      //#region Sheet specific info
       const request = {
         spreadsheetId: process.env.SPREADSHEET_ID,
         ranges: ToRange(sheetNames),
       };
 
       let data = await gsapi.spreadsheets.values.batchGet(request, client.auth);
-      console.log(data.data);
 
       class entry {
         constructor(instruction, details, headerIndex) {
@@ -84,7 +74,8 @@ export default function handler(req, res) {
         }
       }
       class sheet {
-        constructor() {
+        constructor(text) {
+          this.title = text;
           this.headers = [];
         }
         newHeader(text, row) {
@@ -101,64 +92,69 @@ export default function handler(req, res) {
         }
       }
 
-      // ----------------
-      // Get values for Headers
-      console.log("------ Creating Sheet ------");
-      let sheet1 = new sheet();
+      console.log("------ Creating SheetList ------");
+      let sheetlist = [];
+      for (let s = 0; s < data.data.valueRanges.length; s++) {
+        console.log(`------ Creating Sheet ${s + 1} ------`);
+        let currSheet = new sheet(sheetNames[s]);
 
-      console.log("------ Creating Headers ------");
-      for (let i = 0; i < data.data.values.length; i++) {
-        if (data.data.values[i][0]) {
-          sheet1.newHeader(data.data.values[i][0], i);
+        console.log("------ Creating Headers ------");
+        for (let row = 0; row < data.data.valueRanges[s].values.length; row++) {
+          if (data.data.valueRanges[s].values[row][0]) {
+            currSheet.newHeader(data.data.valueRanges[s].values[row][0], row);
+          }
         }
-      }
 
-      //For each header, assign entries
-      console.log("------ Creating Entries ------");
-      for (let hIndex = 0; hIndex < sheet1.headers.length; hIndex++) {
-        console.log("--- For Header: " + sheet1.headers[hIndex].headerText);
+        //For each header, assign entries
+        console.log("------ Creating Entries ------");
+        for (let h = 0; h < currSheet.headers.length; h++) {
+          console.log("--- For Header: " + currSheet.headers[h].headerText);
 
-        // Special case for Last header
-        if (hIndex == sheet1.headers.length - 1) {
-          console.log("------- Inside Last Header Special Case -------");
+          // Special case for Last header
+          if (h == currSheet.headers.length - 1) {
+            console.log("------- Inside Last Header Special Case -------");
+            for (
+              let row = currSheet.headers[h].headerRow + 1; // Starts on row after header
+              row < data.data.valueRanges[s].values.length; // stops before the last row
+              row++
+            ) {
+              // Break if there is null value in row
+              if (!data.data.valueRanges[s].values[row][1]) {
+                break;
+              }
+              currSheet.newEntry(
+                data.data.valueRanges[s].values[row][1],
+                data.data.valueRanges[s].values[row][2],
+                h
+              );
+            }
+            // Break after the last header.
+            break;
+          }
+
+          //Range for entries in database
           for (
-            let row = sheet1.headers[hIndex].headerRow + 1; // Starts on row after header
-            row < data.data.values.length; // stops before the last row
+            let row = currSheet.headers[h].headerRow + 1; // Starts on row after header
+            row < currSheet.headers[h + 1].headerRow; // ends row before next header
             row++
           ) {
-            // Break if there is null value in row
-            if (!data.data.values[row][1]) {
-              break;
-            }
-            sheet1.newEntry(
-              data.data.values[row][1],
-              data.data.values[row][2],
-              hIndex
+            currSheet.newEntry(
+              data.data.valueRanges[s].values[row][1],
+              data.data.valueRanges[s].values[row][2],
+              h
             );
           }
-          // Break after the last header.
-          break;
         }
-
-        //Range for entries in database
-        for (
-          let row = sheet1.headers[hIndex].headerRow + 1; // Starts on row after header
-          row < sheet1.headers[hIndex + 1].headerRow; // ends row before next header
-          row++
-        ) {
-          sheet1.newEntry(
-            data.data.values[row][1],
-            data.data.values[row][2],
-            hIndex
-          );
-        }
+        sheetlist.push(currSheet);
       }
+      //#endregion
+
       console.log("------ Creating Json -------");
-      console.log("Json String: " + JSON.stringify(sheet1));
+      // console.log("Json String: " + JSON.stringify(sheetlist));
 
       return res
         .status(400)
-        .send(JSON.stringify({ error: false, data: sheet1 }));
+        .send(JSON.stringify({ error: false, data: sheetlist }));
     });
   } catch (e) {
     return res
