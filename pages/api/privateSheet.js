@@ -23,14 +23,51 @@ export default function handler(req, res) {
       const gsapi = google.sheets({ version: "v4", auth: client });
       //#endregion
 
+      //#region Request Names of Multiple Worksheets
+      const requestSpreadSheetInfo = {
+        spreadsheetId: process.env.SPREADSHEET_ID,
+      };
+
+      let dataSpreadSheetInfo = await gsapi.spreadsheets.get(
+        requestSpreadSheetInfo,
+        client.auth
+      );
+
+      let sheetNames = [];
+      dataSpreadSheetInfo.data.sheets.forEach((i) => {
+        sheetNames.push(i.properties.title);
+      });
+
+      // console.log(dataSpreadSheetInfo.data.sheets);
+      console.log(sheetNames);
+
+      // function ToRange(strArray) {
+      //   let range = "";
+      //   strArray.forEach((str) => {
+      //     range += `${str}!A1:E&ranges=`;
+      //   });
+      //   range = "ranges=" + range;
+      //   range = range.slice(0, -8);
+      //   return range;
+      // }
+      function ToRange(strArray) {
+        let newArr = strArray.map((element, index) => {
+          return element + "!A1:E";
+        });
+        return newArr;
+      }
+      console.log(ToRange(sheetNames));
+
+      //#endregion
+
       // sheet specific info
       const request = {
         spreadsheetId: process.env.SPREADSHEET_ID,
-        range: "GoogleSheetsDatabase!A1:E",
+        ranges: ToRange(sheetNames),
       };
 
-      let data = await gsapi.spreadsheets.values.get(request, client.auth);
-      // console.log(data.data.values[1][0]);
+      let data = await gsapi.spreadsheets.values.batchGet(request, client.auth);
+      console.log(data.data);
 
       class entry {
         constructor(instruction, details, headerIndex) {

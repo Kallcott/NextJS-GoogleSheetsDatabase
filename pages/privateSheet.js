@@ -24,10 +24,16 @@ export default function Sheet({ sheetdata }) {
               {value.headerEntries.map((value, index) => {
                 return (
                   <div>
-                    <h4 class={"enrtryInstruction, " + value.headerIndex}>
+                    <h4
+                      class={"enrtryInstruction, " + value.headerIndex}
+                      key={index}
+                    >
                       <pre>{value.entryInstruction}</pre>
                     </h4>
-                    <pre class={"entryDetails, " + value.headerIndex}>
+                    <pre
+                      class={"entryDetails, " + value.headerIndex}
+                      key={index}
+                    >
                       {value.entryDetails}
                     </pre>
                   </div>
